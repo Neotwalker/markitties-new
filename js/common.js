@@ -195,189 +195,112 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 
 	const buttonsWrap = document.querySelector('.main--works__buttons');
-	const buttons = document.querySelectorAll('.main--works__buttons .button--tag');
-	const casesWrap = document.querySelector('.main--works__cases');
-	// возвращает количество кейсов, которые нужно показывать по умолчанию
-	function getInitialCount() {
-		return window.innerWidth <= 768 ? 3 : 6;
-	}
-	function resetCases(block) {
-		const items = block.querySelectorAll('.case');
-		const visibleCount = getInitialCount();
-		items.forEach((it, i) => it.classList.toggle('hidden', i >= visibleCount));
+const buttons = document.querySelectorAll('.main--works__buttons .button--tag');
+const casesWrap = document.querySelector('.main--works__cases');
 
-		const btn = block.querySelector('.case--more') || document.querySelector('.case--more');
-		if (!btn) return;
+// сколько кейсов показывать по умолчанию
+function getInitialCount() {
+  return window.innerWidth <= 480 ? 3 : 6;
+}
 
-		if (items.length <= visibleCount) {
-			btn.style.display = 'none';
-			btn.classList.remove('expanded');
-			btn.dataset.state = 'collapsed';
-			const s = btn.querySelector('span'); if (s) s.textContent = 'Смотреть больше';
-		} else {
-			btn.style.display = '';
-			btn.classList.remove('expanded');
-			btn.dataset.state = 'collapsed';
-			const s = btn.querySelector('span'); if (s) s.textContent = 'Смотреть больше';
-		}
-	}
-	function activateButtonAndBlock(button) {
-		if (!button) return;
-		const key = button.dataset.button;
-		const blocks = casesWrap.querySelectorAll('.main--works__type');
+// сброс состояния кейсов в блоке
+function resetCases(block) {
+  const items = block.querySelectorAll('.case');
+  const visibleCount = getInitialCount();
+  const btn = block.querySelector('.case--more');
 
-		buttons.forEach(b => b.classList.remove('active'));
-		blocks.forEach(b => {
-			b.classList.remove('active');
-			resetCases(b);
-		});
+  // скрываем лишние кейсы
+  items.forEach((it, i) => it.classList.toggle('hidden', i >= visibleCount));
 
-		button.classList.add('active');
-		const target = casesWrap.querySelector(`.main--works__type[data-type="${key}"]`);
-		if (target) {
-			target.classList.add('active');
-			resetCases(target);
-		}
-	}
-	// делегирование кликов по кнопкам категорий
-	buttonsWrap && buttonsWrap.addEventListener('click', (e) => {
-		const btn = e.target.closest('.button--tag');
-		if (!btn) return;
-		activateButtonAndBlock(btn);
-	});
-	// делегирование кликов по кнопке "Смотреть больше"
-	// ====== Надёжный обработчик "Смотреть больше" (фильтрация скролла + fallback) ======
-const pointerMap = new Map(); // pointerId -> {btn, startX, startY, moved, startTime}
-const MOVE_THRESHOLD = 10; // px — порог, после которого считаем, что это скролл/свайп
-const DOUBLE_TAP_DELAY = 300; // ms — игнорируем быстрые повторы
-const lastTap = new WeakMap(); // WeakMap для хранения времени последнего тапа для конкретной кнопки
+  if (!btn) return;
 
-// helper: выполнить toggle логики кнопки (reuse существующей логики)
+  if (items.length <= visibleCount) {
+    btn.style.display = 'none';
+    btn.classList.remove('expanded');
+    btn.dataset.state = 'collapsed';
+    const s = btn.querySelector('span'); if (s) s.textContent = 'Смотреть больше';
+  } else {
+    btn.style.display = '';
+    btn.classList.remove('expanded');
+    btn.dataset.state = 'collapsed';
+    const s = btn.querySelector('span'); if (s) s.textContent = 'Смотреть больше';
+  }
+}
+
+// переключение активной категории
+function activateButtonAndBlock(button) {
+  if (!button) return;
+  const key = button.dataset.button;
+  const blocks = casesWrap.querySelectorAll('.main--works__type');
+
+  buttons.forEach(b => b.classList.remove('active'));
+  blocks.forEach(b => {
+    b.classList.remove('active');
+    resetCases(b);
+  });
+
+  button.classList.add('active');
+  const target = casesWrap.querySelector(`.main--works__type[data-type="${key}"]`);
+  if (target) {
+    target.classList.add('active');
+    resetCases(target);
+  }
+}
+
+// переключение кнопки «смотреть больше»
 function toggleMoreButton(btn) {
-	if (!btn) return;
-	const block = btn.closest('.main--works__type') || casesWrap.querySelector('.main--works__type.active');
-	if (!block) return;
+  if (!btn) return;
+  const block = btn.closest('.main--works__type') || casesWrap.querySelector('.main--works__type.active');
+  if (!block) return;
 
-	const items = block.querySelectorAll('.case');
-	const visibleCount = getInitialCount();
-	if (items.length <= visibleCount) return;
+  const items = block.querySelectorAll('.case');
+  const visibleCount = getInitialCount();
+  if (items.length <= visibleCount) return;
 
-	const expanded = btn.classList.toggle('expanded');
-	if (expanded) {
-		items.forEach(it => it.classList.remove('hidden'));
-		btn.dataset.state = 'expanded';
-		const s = btn.querySelector('span'); if (s) s.textContent = 'Скрыть';
-	} else {
-		items.forEach((it, i) => it.classList.toggle('hidden', i >= visibleCount));
-		btn.dataset.state = 'collapsed';
-		const s = btn.querySelector('span'); if (s) s.textContent = 'Смотреть больше';
-	}
+  const expanded = btn.classList.toggle('expanded');
+  if (expanded) {
+    items.forEach(it => it.classList.remove('hidden'));
+    btn.dataset.state = 'expanded';
+    const s = btn.querySelector('span'); if (s) s.textContent = 'Скрыть';
+  } else {
+    items.forEach((it, i) => it.classList.toggle('hidden', i >= visibleCount));
+    btn.dataset.state = 'collapsed';
+    const s = btn.querySelector('span'); if (s) s.textContent = 'Смотреть больше';
+  }
 }
 
-// Pointer events path (современные браузеры)
-document.addEventListener('pointerdown', (e) => {
-	const btn = e.target.closest('.case--more');
-	if (!btn) return;
-	pointerMap.set(e.pointerId, {
-		btn,
-		startX: e.clientX,
-		startY: e.clientY,
-		moved: false,
-		startTime: Date.now()
-	});
-}, { passive: true });
-
-document.addEventListener('pointermove', (e) => {
-	const info = pointerMap.get(e.pointerId);
-	if (!info) return;
-	const dx = e.clientX - info.startX;
-	const dy = e.clientY - info.startY;
-	if (!info.moved && Math.hypot(dx, dy) > MOVE_THRESHOLD) {
-		info.moved = true;
-		pointerMap.set(e.pointerId, info);
-	}
-}, { passive: true });
-
-document.addEventListener('pointerup', (e) => {
-	const info = pointerMap.get(e.pointerId);
-	if (!info) return pointerMap.delete(e.pointerId);
-	pointerMap.delete(e.pointerId);
-
-	// если палец передвинулся — это не тап
-	if (info.moved) return;
-
-	// защита от слишком быстрого повторного срабатывания
-	const now = Date.now();
-	const last = lastTap.get(info.btn) || 0;
-	if (now - last < DOUBLE_TAP_DELAY) return;
-	lastTap.set(info.btn, now);
-
-	// всё — считаем это тапом
-	e.preventDefault();
-	toggleMoreButton(info.btn);
+// обработка клика по кнопкам категорий
+buttonsWrap && buttonsWrap.addEventListener('click', (e) => {
+  const btn = e.target.closest('.button--tag');
+  if (!btn) return;
+  activateButtonAndBlock(btn);
 });
 
-document.addEventListener('pointercancel', (e) => {
-	pointerMap.delete(e.pointerId);
+// обработка клика по «смотреть больше» с анти-даблкликом
+let lock = false;
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.case--more');
+  if (!btn) return;
+
+  if (lock) return;
+  lock = true;
+  setTimeout(() => lock = false, 400);
+
+  e.preventDefault();
+  toggleMoreButton(btn);
 });
 
-// Fallback для старых браузеров без PointerEvent
-if (!window.PointerEvent) {
-	let touchInfo = null;
+// ресет при изменении ширины
+window.addEventListener('resize', () => {
+  const activeBlock = casesWrap.querySelector('.main--works__type.active');
+  if (activeBlock) resetCases(activeBlock);
+});
 
-	document.addEventListener('touchstart', (e) => {
-		const t = e.changedTouches[0];
-		const btn = t.target.closest && t.target.closest('.case--more');
-		if (!btn) return;
-		touchInfo = {
-			id: t.identifier,
-			btn,
-			startX: t.clientX,
-			startY: t.clientY,
-			moved: false,
-			startTime: Date.now()
-		};
-	}, { passive: true });
-
-	document.addEventListener('touchmove', (e) => {
-		if (!touchInfo) return;
-		for (const t of Array.from(e.changedTouches)) {
-			if (t.identifier !== touchInfo.id) continue;
-			const dx = t.clientX - touchInfo.startX;
-			const dy = t.clientY - touchInfo.startY;
-			if (!touchInfo.moved && Math.hypot(dx, dy) > MOVE_THRESHOLD) {
-				touchInfo.moved = true;
-			}
-		}
-	}, { passive: true });
-
-	document.addEventListener('touchend', (e) => {
-		if (!touchInfo) return;
-		for (const t of Array.from(e.changedTouches)) {
-			if (t.identifier !== touchInfo.id) continue;
-
-			if (touchInfo.moved) { touchInfo = null; return; }
-
-			const now = Date.now();
-			const last = lastTap.get(touchInfo.btn) || 0;
-			if (now - last < DOUBLE_TAP_DELAY) { touchInfo = null; return; }
-			lastTap.set(touchInfo.btn, now);
-
-			toggleMoreButton(touchInfo.btn);
-			touchInfo = null;
-		}
-	}, { passive: true });
-
-	document.addEventListener('touchcancel', () => { touchInfo = null; }, { passive: true });
+// инициализация — активируем первую категорию
+if (buttons.length > 0) {
+  activateButtonAndBlock(buttons[0]);
 }
 
-	// при загрузке — активируем первую кнопку и её блок
-	if (buttons.length) activateButtonAndBlock(buttons[0]);
-	// если окно ресайзится — пересчитать видимые кейсы
-	window.addEventListener('resize', () => {
-		const activeBlock = casesWrap.querySelector('.main--works__type.active');
-		if (activeBlock) resetCases(activeBlock);
-	});
 
 	// слайдер main--competiotions
 	let competiotionsSwiper;
