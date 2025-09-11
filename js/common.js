@@ -266,8 +266,18 @@ function toggleMoreButton(btn) {
     items.forEach((it, i) => it.classList.toggle('hidden', i >= visibleCount));
     btn.dataset.state = 'collapsed';
     const s = btn.querySelector('span'); if (s) s.textContent = 'Смотреть больше';
+
+    // 👇 при сворачивании — скроллим к секции #works
+    const worksSection = document.getElementById('works');
+    if (worksSection) {
+      worksSection.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }
   }
 }
+
 
 // обработка клика по кнопкам категорий
 buttonsWrap && buttonsWrap.addEventListener('click', (e) => {
