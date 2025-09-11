@@ -2,26 +2,27 @@
 
 document.addEventListener("DOMContentLoaded", () => {
 
-	const headerWrapper = document.querySelector(".header--wrapper");
-	let lastScroll = window.scrollY;
-	// 🔥 Проверяем сразу при загрузке
-	if (window.scrollY > 50) {
-		headerWrapper.classList.add("scrolled");
-	} else {
-		headerWrapper.classList.remove("scrolled");
-	}
-	// Дальше логика скролла
-	window.addEventListener("scroll", () => {
-		const currentScroll = window.scrollY;
-
-		if (currentScroll > lastScroll && currentScroll > 50) {
+	if (window.innerWidth >= 480){
+		const headerWrapper = document.querySelector(".header--wrapper");
+		let lastScroll = window.scrollY;
+		// 🔥 Проверяем сразу при загрузке
+		if (window.scrollY > 50) {
 			headerWrapper.classList.add("scrolled");
-		} else if (currentScroll < lastScroll && currentScroll <= 50) {
+		} else {
 			headerWrapper.classList.remove("scrolled");
 		}
-
-		lastScroll = currentScroll;
-	});
+		// Дальше логика скролла
+		window.addEventListener("scroll", () => {
+			const currentScroll = window.scrollY;
+	
+			if (currentScroll > lastScroll && currentScroll > 50) {
+				headerWrapper.classList.add("scrolled");
+			} else if (currentScroll < lastScroll && currentScroll <= 50) {
+				headerWrapper.classList.remove("scrolled");
+			}
+			lastScroll = currentScroll;
+		});
+	}
 
 	document.querySelectorAll('.header a[href^="#"]').forEach(anchor => {
 		anchor.addEventListener('click', function(e) {
@@ -38,12 +39,23 @@ document.addEventListener("DOMContentLoaded", () => {
 				top: offsetPosition,
 				behavior: 'smooth'
 			});
+
+			// Закрываем меню, если оно открыто
+			const burger = document.querySelector('.burger');
+			const modalMenu = document.querySelector('.header--block');
+			const header = document.querySelector('.header');
+			if (burger.classList.contains('active')) {
+				burger.classList.remove('active');
+				modalMenu.classList.remove('active');
+				header.classList.remove('active');
+			}
 		});
 	});
 
 	const burger = document.querySelector('.burger');
 	const modalMenu = document.querySelector('.header--block');
 	const header = document.querySelector('.header');
+
 	burger.addEventListener('click', () => {
 		burger.classList.toggle('active');
 		modalMenu.classList.toggle('active');
