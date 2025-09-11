@@ -195,122 +195,116 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 
 	const buttonsWrap = document.querySelector('.main--works__buttons');
-const buttons = document.querySelectorAll('.main--works__buttons .button--tag');
-const casesWrap = document.querySelector('.main--works__cases');
+	const buttons = document.querySelectorAll('.main--works__buttons .button--tag');
+	const casesWrap = document.querySelector('.main--works__cases');
+	// сколько кейсов показывать по умолчанию
+	function getInitialCount() {
+		return window.innerWidth <= 480 ? 3 : 6;
+	}
+	// сброс состояния кейсов в блоке
+	function resetCases(block) {
+		const items = block.querySelectorAll('.case');
+		const visibleCount = getInitialCount();
+		const btn = block.querySelector('.case--more');
 
-// сколько кейсов показывать по умолчанию
-function getInitialCount() {
-  return window.innerWidth <= 480 ? 3 : 6;
-}
+		// скрываем лишние кейсы
+		items.forEach((it, i) => it.classList.toggle('hidden', i >= visibleCount));
 
-// сброс состояния кейсов в блоке
-function resetCases(block) {
-  const items = block.querySelectorAll('.case');
-  const visibleCount = getInitialCount();
-  const btn = block.querySelector('.case--more');
+		if (!btn) return;
 
-  // скрываем лишние кейсы
-  items.forEach((it, i) => it.classList.toggle('hidden', i >= visibleCount));
+		if (items.length <= visibleCount) {
+			btn.style.display = 'none';
+			btn.classList.remove('expanded');
+			btn.dataset.state = 'collapsed';
+			const s = btn.querySelector('span'); if (s) s.textContent = 'Смотреть больше';
+		} else {
+			btn.style.display = '';
+			btn.classList.remove('expanded');
+			btn.dataset.state = 'collapsed';
+			const s = btn.querySelector('span'); if (s) s.textContent = 'Смотреть больше';
+		}
+	}
+	// переключение активной категории
+	function activateButtonAndBlock(button) {
+		if (!button) return;
+		const key = button.dataset.button;
+		const blocks = casesWrap.querySelectorAll('.main--works__type');
 
-  if (!btn) return;
+		buttons.forEach(b => b.classList.remove('active'));
+		blocks.forEach(b => {
+			b.classList.remove('active');
+			resetCases(b);
+		});
 
-  if (items.length <= visibleCount) {
-    btn.style.display = 'none';
-    btn.classList.remove('expanded');
-    btn.dataset.state = 'collapsed';
-    const s = btn.querySelector('span'); if (s) s.textContent = 'Смотреть больше';
-  } else {
-    btn.style.display = '';
-    btn.classList.remove('expanded');
-    btn.dataset.state = 'collapsed';
-    const s = btn.querySelector('span'); if (s) s.textContent = 'Смотреть больше';
-  }
-}
+		button.classList.add('active');
+		const target = casesWrap.querySelector(`.main--works__type[data-type="${key}"]`);
+		if (target) {
+			target.classList.add('active');
+			resetCases(target);
+		}
+	}
+	// переключение кнопки «смотреть больше»
+	function toggleMoreButton(btn) {
+		if (!btn) return;
+		const block = btn.closest('.main--works__type') || casesWrap.querySelector('.main--works__type.active');
+		if (!block) return;
 
-// переключение активной категории
-function activateButtonAndBlock(button) {
-  if (!button) return;
-  const key = button.dataset.button;
-  const blocks = casesWrap.querySelectorAll('.main--works__type');
+		const items = block.querySelectorAll('.case');
+		const visibleCount = getInitialCount();
+		if (items.length <= visibleCount) return;
 
-  buttons.forEach(b => b.classList.remove('active'));
-  blocks.forEach(b => {
-    b.classList.remove('active');
-    resetCases(b);
-  });
+		const expanded = btn.classList.toggle('expanded');
+		if (expanded) {
+			items.forEach(it => it.classList.remove('hidden'));
+			btn.dataset.state = 'expanded';
+			const s = btn.querySelector('span'); if (s) s.textContent = 'Скрыть';
+		} else {
+			items.forEach((it, i) => it.classList.toggle('hidden', i >= visibleCount));
+			btn.dataset.state = 'collapsed';
+			const s = btn.querySelector('span'); if (s) s.textContent = 'Смотреть больше';
 
-  button.classList.add('active');
-  const target = casesWrap.querySelector(`.main--works__type[data-type="${key}"]`);
-  if (target) {
-    target.classList.add('active');
-    resetCases(target);
-  }
-}
+			// скроллим к секции #works при сворачивании
+			const worksSection = document.getElementById('works');
+			if (worksSection) {
+				worksSection.scrollIntoView({
+					behavior: "smooth",
+					block: "start"
+				});
+			}
+		}
+	}
+	// обработка клика по кнопкам категорий
+	buttonsWrap && buttonsWrap.addEventListener('click', (e) => {
+		const btn = e.target.closest('.button--tag');
+		if (!btn) return;
+		activateButtonAndBlock(btn);
+	});
+	// обработка клика по «смотреть больше» с анти-даблкликом
+	let lock = false;
+	document.addEventListener('click', (e) => {
+		const btn = e.target.closest('.case--more');
+		if (!btn) return;
 
-// переключение кнопки «смотреть больше»
-function toggleMoreButton(btn) {
-  if (!btn) return;
-  const block = btn.closest('.main--works__type') || casesWrap.querySelector('.main--works__type.active');
-  if (!block) return;
+		if (lock) return;
+		lock = true;
+		setTimeout(() => lock = false, 400);
 
-  const items = block.querySelectorAll('.case');
-  const visibleCount = getInitialCount();
-  if (items.length <= visibleCount) return;
-
-  const expanded = btn.classList.toggle('expanded');
-  if (expanded) {
-    items.forEach(it => it.classList.remove('hidden'));
-    btn.dataset.state = 'expanded';
-    const s = btn.querySelector('span'); if (s) s.textContent = 'Скрыть';
-  } else {
-    items.forEach((it, i) => it.classList.toggle('hidden', i >= visibleCount));
-    btn.dataset.state = 'collapsed';
-    const s = btn.querySelector('span'); if (s) s.textContent = 'Смотреть больше';
-
-    // 👇 при сворачивании — скроллим к секции #works
-    const worksSection = document.getElementById('works');
-    if (worksSection) {
-      worksSection.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-    }
-  }
-}
-
-
-// обработка клика по кнопкам категорий
-buttonsWrap && buttonsWrap.addEventListener('click', (e) => {
-  const btn = e.target.closest('.button--tag');
-  if (!btn) return;
-  activateButtonAndBlock(btn);
-});
-
-// обработка клика по «смотреть больше» с анти-даблкликом
-let lock = false;
-document.addEventListener('click', (e) => {
-  const btn = e.target.closest('.case--more');
-  if (!btn) return;
-
-  if (lock) return;
-  lock = true;
-  setTimeout(() => lock = false, 400);
-
-  e.preventDefault();
-  toggleMoreButton(btn);
-});
-
-// ресет при изменении ширины
-window.addEventListener('resize', () => {
-  const activeBlock = casesWrap.querySelector('.main--works__type.active');
-  if (activeBlock) resetCases(activeBlock);
-});
-
-// инициализация — активируем первую категорию
-if (buttons.length > 0) {
-  activateButtonAndBlock(buttons[0]);
-}
-
+		e.preventDefault();
+		toggleMoreButton(btn);
+	});
+	// ресет при изменении ширины — только если ширина реально изменилась
+	let lastWidth = window.innerWidth;
+	window.addEventListener('resize', () => {
+		if (window.innerWidth !== lastWidth) {
+			lastWidth = window.innerWidth;
+			const activeBlock = casesWrap.querySelector('.main--works__type.active');
+			if (activeBlock) resetCases(activeBlock);
+		}
+	});
+	// инициализация — активируем первую категорию
+	if (buttons.length > 0) {
+		activateButtonAndBlock(buttons[0]);
+	}
 
 	// слайдер main--competiotions
 	let competiotionsSwiper;
